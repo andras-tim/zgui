@@ -5,6 +5,12 @@ Linux GUI viewer for ZFS pool, dataset and host storage.
 
 zgui used libzfs directly and not ZFS command line tools.
 
+## Screenshot
+
+<img src="screenshot/dataset.png" width="400">
+<img src="screenshot/pool.png" width="400">
+<img src="screenshot/storage.png" width="400">
+
 ## Prerequisite
 - Debian Buster with packages
   - libgtk-3-dev
