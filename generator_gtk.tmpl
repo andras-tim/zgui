@@ -1,0 +1,22 @@
+// Auto generated file
+
+package main
+
+import (
+	"log"
+
+	"github.com/gotk3/gotk3/gtk"
+)
+{{ range . }}
+func (w *GUI) getGtk{{ . }}(name string) *gtk.{{ . }} {
+	obj, err := w.builder.GetObject(name)
+	errorCheck(err)
+
+	if win, ok := obj.(*gtk.{{ . }}); ok {
+		return win
+	}
+
+	log.Panic()
+	return nil
+}
+{{ end }}
