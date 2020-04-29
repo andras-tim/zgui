@@ -12,7 +12,6 @@ func (w *GUI) getGtkButton(name string) *gtk.Button {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.Button); ok {
 		return win
 	}
@@ -25,7 +24,6 @@ func (w *GUI) getGtkLabel(name string) *gtk.Label {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.Label); ok {
 		return win
 	}
@@ -38,7 +36,6 @@ func (w *GUI) getGtkListStore(name string) *gtk.ListStore {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.ListStore); ok {
 		return win
 	}
@@ -51,7 +48,6 @@ func (w *GUI) getGtkProgressBar(name string) *gtk.ProgressBar {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.ProgressBar); ok {
 		return win
 	}
@@ -64,7 +60,6 @@ func (w *GUI) getGtkTreeStore(name string) *gtk.TreeStore {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.TreeStore); ok {
 		return win
 	}
@@ -77,7 +72,6 @@ func (w *GUI) getGtkTreeView(name string) *gtk.TreeView {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.TreeView); ok {
 		return win
 	}
@@ -90,7 +84,6 @@ func (w *GUI) getGtkWindow(name string) *gtk.Window {
 	obj, err := w.builder.GetObject(name)
 	errorCheck(err)
 
-	// Make type assertion (as per gtk.go).
 	if win, ok := obj.(*gtk.Window); ok {
 		return win
 	}

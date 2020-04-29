@@ -105,7 +105,7 @@ func (w *GUI) init(application *gtk.Application) {
 	w.application = application
 
 	// Get the Glade UI builder
-	builder, err := gtk.BuilderNewFromFile("zgui.glade")
+	builder, err := gtk.BuilderNewFromFile(getPath("zgui.glade"))
 	errorCheck(err)
 	w.builder = builder
 
@@ -122,7 +122,8 @@ func (w *GUI) init(application *gtk.Application) {
 }
 
 func (w *GUI) getImage(path string) *gdk.Pixbuf {
-	image, err := gdk.PixbufNewFromFileAtScale(fmt.Sprintf("/home/ascii/projects/zgui/git/zgui/icons/%s.png", path), 20, 20, true)
+	path = getPath(fmt.Sprintf("icons/%s.png", path))
+	image, err := gdk.PixbufNewFromFileAtScale(path, 20, 20, true)
 	errorCheck(err)
 
 	return image
