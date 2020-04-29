@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	checkZFS()
+
 	os.Exit(StartGTKApplication())
 	// ShowBlockStorage()
 	// zfsPools()
@@ -18,7 +20,7 @@ func main() {
 
 func errorCheck(e error) {
 	if e != nil {
-		log.Panic(e)
+		log.Panicln(e)
 	}
 }
 

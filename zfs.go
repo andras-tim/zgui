@@ -3,9 +3,24 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	zfs "github.com/bicomsystems/go-libzfs"
 )
+
+// This looks for unix only...
+func checkZFS() {
+	path := "/dev/zfs"
+
+	info, err := os.Stat(path)
+	if err != nil {
+		log.Panicln("ZFS not accessible or not loaded")
+	}
+
+	if (info.Mode().Perm() & 0b000000110) != 0b000000110 {
+		log.Panicln("Bad ZFS permission: current user allowed ?")
+	}
+}
 
 func zfsPools() {
 	// Lets open handles to all active pools on system
