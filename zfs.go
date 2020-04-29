@@ -17,7 +17,8 @@ func checkZFS() {
 		log.Panicln("ZFS not accessible or not loaded")
 	}
 
-	if (info.Mode().Perm() & 0b000000110) != 0b000000110 {
+	// 0b000000110 = 6
+	if (info.Mode().Perm() & 6) != 6 {
 		log.Panicln("Bad ZFS permission: current user allowed ?")
 	}
 }
