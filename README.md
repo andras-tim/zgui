@@ -11,6 +11,14 @@ zgui used libzfs directly and not ZFS command line tools.
 <img src="screenshot/pool.png" width="400">
 <img src="screenshot/storage.png" width="400">
 
+## Installation
+
+```$ go get gitlab.com/beteras/zgui```
+
+and to execute
+
+```$ zgui```
+
 ## Prerequisite
 - Debian Buster with packages
   - libgtk-3-dev
