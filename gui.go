@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	zfs "github.com/bicomsystems/go-libzfs"
 	"github.com/dustin/go-humanize"
@@ -31,14 +32,14 @@ func StartGTKApplication() int {
 		log.Println("application startup")
 	})
 
+	application.Connect("shutdown", func() {
+		log.Println("application shutdown")
+	})
+
 	application.Connect("activate", func() {
 		log.Println("application activate")
 		var gui GUI
 		gui.init(application)
-	})
-
-	application.Connect("shutdown", func() {
-		log.Println("application shutdown")
 	})
 
 	// Launch the application
@@ -72,12 +73,15 @@ type GUI struct {
 	poolVdevsTreeView         *gtk.TreeView
 	storageTreeView           *gtk.TreeView
 
-	quitButton           *gtk.Button
-	refreshButton        *gtk.Button
-	poolStateLabel       *gtk.Label
-	poolUsageProgressBar *gtk.ProgressBar
-	poolSizeLabel        *gtk.Label
-	poolFreeLabel        *gtk.Label
+	quitButton             *gtk.Button
+	refreshButton          *gtk.Button
+	poolStateLabel         *gtk.Label
+	poolUsageProgressBar   *gtk.ProgressBar
+	poolSizeLabel          *gtk.Label
+	poolFreeLabel          *gtk.Label
+	datasetAvailableLabel  *gtk.Label
+	datasetCreationLabel   *gtk.Label
+	datasetMountPointLabel *gtk.Label
 
 	// GTK TreeView sort
 
@@ -121,28 +125,20 @@ func (w *GUI) init(application *gtk.Application) {
 	w.application.AddWindow(w.window)
 }
 
-func (w *GUI) getImage(path string) *gdk.Pixbuf {
-	path = getPath(fmt.Sprintf("icons/%s.png", path))
-	image, err := gdk.PixbufNewFromFileAtScale(path, 20, 20, true)
-	errorCheck(err)
-
-	return image
-}
-
 func (w *GUI) initIcons() {
-	w.iconDatasetClone = w.getImage("dataset-clone")
-	w.iconDatasetFilesystem = w.getImage("dataset-filesystem")
-	w.iconDatasetSnapshot = w.getImage("dataset-snapshot")
-	w.iconDatasetVolume = w.getImage("dataset-volume")
-	w.iconStateBad = w.getImage("state-bad")
-	w.iconStateOK = w.getImage("state-ok")
-	w.iconStateWarning = w.getImage("state-warning")
-	w.iconStorageHDD = w.getImage("storage-hdd")
-	w.iconStorageNVMe = w.getImage("storage-nvme")
-	w.iconStoragePartition = w.getImage("storage-partition")
-	w.iconStorageSSD = w.getImage("storage-ssd")
-	w.iconStorageUSB = w.getImage("storage-usb")
-	w.iconZFSRaidZ = w.getImage("zfs-raidz")
+	w.iconDatasetClone = getImage("dataset-clone")
+	w.iconDatasetFilesystem = getImage("dataset-filesystem")
+	w.iconDatasetSnapshot = getImage("dataset-snapshot")
+	w.iconDatasetVolume = getImage("dataset-volume")
+	w.iconStateBad = getImage("state-bad")
+	w.iconStateOK = getImage("state-ok")
+	w.iconStateWarning = getImage("state-warning")
+	w.iconStorageHDD = getImage("storage-hdd")
+	w.iconStorageNVMe = getImage("storage-nvme")
+	w.iconStoragePartition = getImage("storage-partition")
+	w.iconStorageSSD = getImage("storage-ssd")
+	w.iconStorageUSB = getImage("storage-usb")
+	w.iconZFSRaidZ = getImage("zfs-raidz")
 }
 
 func (w *GUI) initGladeObjects() {
@@ -169,6 +165,9 @@ func (w *GUI) initGladeObjects() {
 	w.poolUsageProgressBar = w.getGtkProgressBar("poolUsageProgressBar")
 	w.poolSizeLabel = w.getGtkLabel("poolSizeLabel")
 	w.poolFreeLabel = w.getGtkLabel("poolFreeLabel")
+	w.datasetAvailableLabel = w.getGtkLabel("datasetAvailableLabel")
+	w.datasetCreationLabel = w.getGtkLabel("datasetCreationLabel")
+	w.datasetMountPointLabel = w.getGtkLabel("datasetMountPointLabel")
 
 	w.window = w.getGtkWindow("mainWindow")
 
@@ -226,6 +225,22 @@ func (w *GUI) onDatasetSelectionChanged(name string) {
 		err = w.datasetPropertiesListStore.SetValue(iter, 3, "this is my tooltip: TOOLTIP\nBold ? <b>w00t</b>")
 		errorCheck(err)
 	}
+
+	w.datasetAvailableLabel.SetText(dataset.Properties[zfs.DatasetPropAvailable].Value)
+
+	creation, err := strconv.ParseInt(dataset.Properties[zfs.DatasetPropCreation].Value, 0, 64)
+	errorCheck(err)
+
+	w.datasetCreationLabel.SetText(time.Unix(creation, 0).String())
+
+	w.datasetMountPointLabel.SetText(dataset.Properties[zfs.DatasetPropMountpoint].Value)
+
+	// Convert size to unsigned integer
+	sizeAvailaible, err := strconv.ParseUint(dataset.Properties[zfs.DatasetPropAvailable].Value, 0, 64)
+	if err == nil {
+		// Set size/free label text
+		w.datasetAvailableLabel.SetText(humanize.Bytes(sizeAvailaible))
+	}
 }
 
 func (w *GUI) onPoolSelectionChanged(name string) {
@@ -233,21 +248,30 @@ func (w *GUI) onPoolSelectionChanged(name string) {
 	defer pool.Close()
 	errorCheck(err)
 
+	// Get pool state
 	state, err := pool.State()
 	errorCheck(err)
 
+	// Get pool as name
 	w.poolStateLabel.SetText(zfs.PoolStateToName(state))
 
+	// Convert size to float
 	size, err := strconv.ParseFloat(pool.Properties[zfs.PoolPropSize].Value, 32)
 	errorCheck(err)
+	// Convert free space to float
 	free, err := strconv.ParseFloat(pool.Properties[zfs.PoolPropFree].Value, 32)
 	errorCheck(err)
+	// Set used progress bar percentage
 	w.poolUsageProgressBar.SetFraction(1 - (free / size))
 
+	// Convert size to unsigned integer
 	sizeI, err := strconv.ParseUint(pool.Properties[zfs.PoolPropSize].Value, 0, 64)
 	errorCheck(err)
+
+	// Convert free to unsigned integer
 	freeI, err := strconv.ParseUint(pool.Properties[zfs.PoolPropFree].Value, 0, 64)
 	errorCheck(err)
+	// Set size/free label text
 	w.poolSizeLabel.SetText(humanize.Bytes(sizeI))
 	w.poolFreeLabel.SetText(humanize.Bytes(freeI))
 
@@ -348,7 +372,6 @@ func (w *GUI) vDevsStoreAdd(vt zfs.VDevTree, iter1 *gtk.TreeIter) {
 					// default:
 					// 	icon = w.iconUnknownStorage
 				}
-				fmt.Println(disk.String())
 			}
 		}
 
@@ -389,7 +412,7 @@ func (w *GUI) vDevsStoreAdd(vt zfs.VDevTree, iter1 *gtk.TreeIter) {
 }
 
 func (w *GUI) refresh() {
-	log.Println("Refreshing...")
+	log.Println("Refreshing all tabs...")
 
 	w.refreshDatasetTab()
 	w.refreshPoolTab()
@@ -529,8 +552,7 @@ func (w *GUI) refreshPoolTab() {
 	}
 
 	// Select first pool
-	iter, ok := w.poolModelSort.GetIterFirst()
-	if ok {
+	if iter, ok := w.poolModelSort.GetIterFirst(); ok {
 		sel, err := w.poolTreeView.GetSelection()
 		errorCheck(err)
 
