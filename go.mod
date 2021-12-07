@@ -1,4 +1,4 @@
-module zgui
+module gitlab.com/andras-tim/zgui
 
 go 1.13
 
